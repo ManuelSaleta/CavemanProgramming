@@ -8,18 +8,22 @@ By the end of this tutorial you will *understand* monads, and even you,again... 
 If you are human, skip to the [What Is A Monad For Humans](#what-is-a-monad-for-humans) section.
 
 Disclaimer - I will use C# for this tutorial, because well.. thats what I want to use `:D`
+# What Will I Learn?
+- You will learn about **monads**.
+- You will how to implement it in C#. Step-by-step.
+- Additionally learn other C# topics, like `Generics`.
 
 Enough mumbling...
 
-## What Even Is a Monad? 
+# What Even Is a Monad? 
 
-# Monads: Mathematical & Functional Definitions
+## Monads: Mathematical & Functional Definitions
 
 Quick reference definitions for Monads from Category Theory and Functional Programming.
 
 ---
 
-## 1. Category Theory Definition
+### 1. Category Theory Definition
 
 A **monad** on a category $\mathcal{C}$ is a triple $(T, \eta, \mu)$, where:
 
@@ -27,18 +31,18 @@ A **monad** on a category $\mathcal{C}$ is a triple $(T, \eta, \mu)$, where:
 * **$\eta: \text{id}_{\mathcal{C}} \implies T$** is a natural transformation called the **unit** (or *return*).
 * **$\mu: T^2 \implies T$** is a natural transformation called the **multiplication** (or *join*).
 
-### Coherence Laws
+#### Coherence Laws
 These transformations must satisfy the **associativity** and **identity** commutative diagrams:
 
 $$\mu \circ T\mu = \mu \circ \mu T \quad \text{and} \quad \mu \circ T\eta = \mu \circ \eta T = \text{id}_T$$
 
 ---
 
-## 2. Functional Programming Definition
+### 2. Functional Programming Definition
 
 In programming, a **monad** is a generic type `M<T>` wrapper equipped with two primary operations used to chain computations while abstracting away side effects, state, or context:
 
-### Core Operations
+#### Core Operations
 
 | Operation | Signature | Description |
 | :--- | :--- | :--- |
