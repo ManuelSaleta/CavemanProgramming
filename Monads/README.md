@@ -289,7 +289,7 @@ public class Container<T>
     public T Value = _data;
 }
 ```
-## Section II - Adding The Mapping Function
+## Section II - Mapping our way to freedom
 Okay but enough of that, so far our **monad** is not very useful, it barely has any value, it can take in a value and it eposes its value... we dont need to use the `new` keyword and it we levearage the inferance system to figure out the type at runtime.
 
 Let's start making something fun, the second the piece we need for our Monad is giving the abilty to perform trans formations on the wrapped entity. Let's add a `Map` function to our lackluster Container class.
@@ -331,19 +331,184 @@ var giftWrapper = Container
 
 Console.WriteLine($"The type is: {giftWrapper.GetType()}");
 Console.WriteLine($"The result is: {giftWrapper}");
-
 // The type is: Container`1[System.Int32]
 // The result is: 19
 ```
 
+## Section III - Containers all the way down
+
+Our `wrapper` class is coming along great, we can transform our `T` and mutate it a bunch, we don't worry about its current state or context which is exactcly what our goal was.
+
+But if you play around with with a long while you might do something like:
+```csharp
+//...
+
+var multiWrapped = Container
+    .Of(9001)
+    .Map(x => Container.Of(x))
+    .Map(x => Container.Of(x))
+    .Map(x => Container.Of(x));
 
 
+Console.WriteLine($"mistery wrapper has: {multiWrapped}");
+// mistery wrapper has: Container`1[Container`1[Container`1[System.Int32]]]
+```
 
+Yes the code snippet is perfectly valid... in that it compiles, but now look at what we've made. *Containers all the way down*. We know have a container that has a container that has a container that has an `int`.
+
+And yes if you wanted to get the actual value of `T` you would do this:
+```csharp
+//...
+Console.WriteLine($"mistery wrapper has: {multiWrapped.Value.Value.Value.Value}");
+// mistery wrapper has: 9001
+// Call Value once per .Map(...) invokation, + 1 more for the original container. Total of 4 times to unwrap our value, funny gift-giving prank... not very funny in code.
+```
+
+This example is humorous, until you have a real-life production scenario you are trying to debug. If you've been around code long enough innevitably you will have ran into this scenario (yikes). things like `response.response` or `data.data` are for more common than you think. So whats the fix?
+
+*We implement a way to flat map the chain* with our aptly named `.FlatMap()` function.
+```csharp
+//...
+public Container<TResult> FlatMap<TResult>(Func<T, Container<TResult>> transform)
+{
+    return transform(Value);
+}
+```
+
+On the surface `.Map(...)` and `.FlatMap(...)` look deceptively similar. But there are two key differences:
+
+1. Our `transform` function returns a *container* of type `TResult` instead of `TResult` directly hence `Func<T,Container<TResult>>>` and we do not return a new instance of wrapper (we do but bear with me) instead we *flatten* the chain, to allow us to undo a call to `Map(...)`
+
+So now we can do:
+```csharp
+//...
+
+var multiWrapped = Container
+    .Of(9001)
+    .Map(x => Container.Of(x))
+    .Map(x => Container.Of(x))
+    .Map(x => Container.Of(x))
+    .FlatMap()
+    .FlatMap()
+    .FlatMap();
+
+Console.WriteLine($"mistery wrapper has: {multiWrapped.Value}");
+// mistery wrapper has: 9001
+```
+So `FlatMap` is not magical, it cannot prevent an infinite binding chain, but it *can* prevent at least a double chain.
+
+```csharp
+var multiWrapped = Container
+    .Of(9001)
+    .Map(x => Container.Of(x));
+    .FlatMap();
+
+Console.WriteLine($"mistery wrapper has: {multiWrapped.Value}");
+// mistery wrapper has: 9001
+```
+
+# Summary - Putting all together
+
+Well that was quite a lot of writing. And in the age of `Claude` and `Copilot` - some might be turning their nose saying "why bother?" "what the point?". And to those people I say, this is *exactly* the point. Its more important than ever for engineers to dig deeper, really understand the more advanced concepts. As we move more towards being *agentic managers* where we are spending more time reading and reviewing AI generated code than writing it. Sharpening your skills becomes more and more important. 
+
+Regardless of how fast your manager vibe-coded that POC he swears is ***almost production ready***. Software engineering still not a solved issue, you still need to know how to code, and how to design systems. 
+
+And in my best Youtuber impression, *If you liked this tutorial, leave a comment, feedback or start this repo* I get absolutely nothing other than knowing maybe someone out there **learnted** something. :D
+
+## Full Working Example Program W/ Extra Goodies
+
+Fundamentally it is all the same code - Here is what changed and got added:
+- Adds `.ToString` so we can pass it without calling var.Value.
+- Adds .`GetInfo` so we get some nicely formatted output.
+- Uses `=>` syntax to remove visual clutter
+- Renames `TResult` to `U` to remove visual clutter. 
+- Renames `Map` to `Select` to enable LINQ syntax.
+- Renames `FlatMap` to `SelectMany` to enable LING syntax.
+- Adds `FlatMap/SelectMany` override to desmonstrate LINQ multi-selct.
+```csharp
+using System;
+
+public class Container
+{
+    public static Container<T> Of<T>(T value) => new(value);
+}
+
+public class Container<T>(T value)
+{
+    public T Value => value;
+
+    // Map / Functor. Named Select to enable LINQ* syntax
+    public Container<U> Select<U>(Func<T, U> transform)
+        => Container.Of(transform(value));
+
+    // FlatMap / Bind / Monad. Named SelectMany to enable LINQ* syntax
+    public Container<U> SelectMany<U>(Func<T, Container<U>> transform)
+        => transform(value);
+
+    // Complete LINQ Query Support - could be a whole README.md on its own
+    // Enables multi-from clauses: `from x in c1 from y in c2 select x + y`
+    public Container<V> SelectMany<U, V>(
+        Func<T, Container<U>> selector,
+        Func<T, U, V> resultSelector)
+    {
+        // Unwraps T, runs selector to get Container<U>, unwraps U, projects to V
+        return SelectMany(x => selector(x).Select(y => resultSelector(x, y)));
+    }    
+    
+    public override string ToString() => $"Value of container is: {value}";
+
+    // Reflection method to inspect container state
+    public string GetInfo()
+    {
+        Type containerType = typeof(Container<T>);
+        Type innerType = typeof(T);
+
+        return $"Container Type: {containerType.Name}, Inner Type: {innerType.Name}, Value: {value}";
+    }
+}
+
+public static class Program
+{
+    public static void Main()
+    {
+        // 1. Instantiation via static factory
+        var wrapper = Container.Of(9001);
+
+        Console.WriteLine("--- Basic Information ---");
+        Console.WriteLine(wrapper);           // Calls ToString()
+        Console.WriteLine(wrapper.GetInfo()); // Calls GetInfo()
+
+        Console.WriteLine("\n--- Method Chaining (Select & SelectMany) ---");
+        
+        // Transform the payload (Map / Select)
+        var textWrapper = wrapper.Select(x => $"Power level over {x}!");
+        Console.WriteLine(textWrapper);
+
+        // Chain monad operations (FlatMap / SelectMany)
+        var multipliedWrapper = wrapper.SelectMany(x => Container.Of(x * 2));
+        Console.WriteLine(multipliedWrapper.GetInfo());
+
+        Console.WriteLine("\n--- Idiomatic LINQ Expression ---");
+
+        var c1 = Container.Of(100);
+        var c2 = Container.Of(500);
+
+        // Works thanks to the two-parameter SelectMany<U, V> overload
+        var combined = 
+            from x in c1
+            from y in c2
+            select x + y;
+
+        Console.WriteLine(combined);
+        Console.WriteLine(combined.GetInfo());
+    }
+}
+```
 
 
 # Further Reading
-- [Generics C#]()
-- [Primmary Constructors C#]()
-- [Projection Methods C#]()
-- [Reflection C#]()
-- [Factory Design Pattern C#]()
+- [Generics in C#](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/)
+- [Primary Constructors in C#](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-12#primary-constructors)
+- [Projection Methods (LINQ / Select) in C#](https://learn.microsoft.com/en-us/dotnet/csharp/linq/standard-query-operators/projection-operations)
+- [Reflection in .NET](https://learn.microsoft.com/en-us/dotnet/framework/reflection-and-codedom/reflection)
+- [Factory Design Pattern Concepts in C#](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-implemenation#use-factories-for-aggregate-creation)
