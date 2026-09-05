@@ -1,21 +1,24 @@
-# Monads 
+# Monads
 
 ## Who is this for?
- It's for you dummy; no, not you, _me_. This is for me, but can also be for you. But mainly... this is for me. Because I have seen every video on Monads, endless tutorials and somehow it never clicked. If you asked me to implement it forget it. Maybe the trick is to start coding by age 5 and sell your first startup by 11. And I am about 20 years too late for that. 
 
-By the end of this tutorial you will *understand* monads, and even you,again... not you silly, me. Potentially know how to implement one...
+It's for you dummy; no, not you, _me_. This is for me, but can also be for you. But mainly... this is for me. Because I have seen every video on Monads, endless tutorials and somehow it never clicked. If you asked me to implement it forget it. Maybe the trick is to start coding by age 5 and sell your first startup by 11. And I am about 20 years too late for that.
+
+By the end of this tutorial you will _understand_ monads, and even you,again... not you silly, me. Potentially know how to implement one...
 
 If you are human, skip to the [What Is A Monad For Humans](#what-is-a-monad-for-humans) section.
 
 Disclaimer - I will use C# for this tutorial, because well.. thats what I want to use `:D`
+
 # What Will I Learn?
+
 - You will learn about **monads**.
 - You will how to implement it in C#. Step-by-step.
 - Additionally learn other C# topics, like `Generics`.
 
 Enough mumbling...
 
-# What Even Is a Monad? 
+# What Even Is a Monad?
 
 ## Monads: Mathematical & Functional Definitions
 
@@ -27,11 +30,12 @@ Quick reference definitions for Monads from Category Theory and Functional Progr
 
 A **monad** on a category $\mathcal{C}$ is a triple $(T, \eta, \mu)$, where:
 
-* **$T: \mathcal{C} \to \mathcal{C}$** is an **endofunctor**.
-* **$\eta: \text{id}_{\mathcal{C}} \implies T$** is a natural transformation called the **unit** (or *return*).
-* **$\mu: T^2 \implies T$** is a natural transformation called the **multiplication** (or *join*).
+- **$T: \mathcal{C} \to \mathcal{C}$** is an **endofunctor**.
+- **$\eta: \text{id}_{\mathcal{C}} \implies T$** is a natural transformation called the **unit** (or _return_).
+- **$\mu: T^2 \implies T$** is a natural transformation called the **multiplication** (or _join_).
 
 #### Coherence Laws
+
 These transformations must satisfy the **associativity** and **identity** commutative diagrams:
 
 $$\mu \circ T\mu = \mu \circ \mu T \quad \text{and} \quad \mu \circ T\eta = \mu \circ \eta T = \text{id}_T$$
@@ -44,25 +48,29 @@ In programming, a **monad** is a generic type `M<T>` wrapper equipped with two p
 
 #### Core Operations
 
-| Operation | Signature | Description |
-| :--- | :--- | :--- |
-| **`return`** (*unit*) | $T \to M<T>$ | Lifts a raw value into the monadic context. |
-| **`bind`** (*flatMap* / `>>=`) | $(M<T>, (T \to M<U>)) \to M<U>$ | Feeds the inner value into a function returning a new monadic container. |
+| Operation                      | Signature                       | Description                                                              |
+| :----------------------------- | :------------------------------ | :----------------------------------------------------------------------- |
+| **`return`** (_unit_)          | $T \to M<T>$                    | Lifts a raw value into the monadic context.                              |
+| **`bind`** (_flatMap_ / `>>=`) | $(M<T>, (T \to M<U>)) \to M<U>$ | Feeds the inner value into a function returning a new monadic container. |
 
 ---
 
 ### The Three Monad Laws
 
-To ensure predictable behavior, any implementation must satisfy three algebraic rules: 
+To ensure predictable behavior, any implementation must satisfy three algebraic rules:
+
 1. **Left Identity**
+
 ```text
 bind(return(x), f) == f(x)
 ```
+
 Wrapping a raw value with Of(x) and then calling FlatMap(f) produces the exact same result as calling f(x) directly.
 
 2. **Right Identity**
 
 Passing your monad's unit/factory function (Container.Of) to FlatMap returns the exact same monad unchanged.
+
 ```csharp
 var m = Container.Of(42);
 // Right side: bind(m, return)
@@ -90,37 +98,35 @@ var right = m.FlatMap(x => f(x).FlatMap(g));
 // Associativity Law: left.Value == right.Value ("Value: 15")
 ```
 
-
 ## Lesson Over
+
 Congratulations, you know all you need about **monads**. Go on, get out of here - there are AI startups to make and sell. But if you would like to stick around and hangout with me that'd be nice too.
 
 Le me try explaining it myself as eloquently as the above segment.
 
 # What is a Monad For Humans
 
-Put simply, a **monad** is a type of container that can take something in have it applied changes to while retaining the same shape, it doesn't care about the state of the thing it contains. This is a design pattern widely used in functional programming. Okay but *what* is a monad bro I am getting tired...
+Put simply, a **monad** is a type of container that can take something in have it applied changes to while retaining the same shape, it doesn't care about the state of the thing it contains. This is a design pattern widely used in functional programming. Okay but _what_ is a monad bro I am getting tired...
 
 - Sorry just stalling. Here it is
 
-*"A **monad** is a type of container"* Like a box, a wrapper etc... The important thing to remember is
+_"A **monad** is a type of container"_ Like a box, a wrapper etc... The important thing to remember is
 
-*Monads always have at least three key aspects to them:*
+_Monads always have at least three key aspects to them:_
 
 1. A **monad** has a way of putting an entity into its wrapper
 2. A **monad** has a way of applying any number of transformations to the wrapped entity, while't being able to return the updated entity in the wrapper.
-3. A **monad** has a way of unwrapping its entity regardless of the amount of transformationed applied to it.
-
+3. A **monad** has a Unit call that (returns) and Bind call that (flatMaps) its generic T.
 
 Are you an expert now? no? okay let us try once more with a bit more formal context.
 
-*"A **monad** is a generic wrapper that can lift any T into its context, it has a way of binding and applying transformations to T while avoiding side effects."* 
+_"A **monad** is a generic wrapper that can lift any T into its context, it has a way of binding and applying transformations to T while avoiding side effects."_
 
 Monads at least have three parts to them:
 
 1. A **monad** has a static mechanism to lift T value into its context and resolves to the wrapper.
-2. A **monad** has a way to *bind* T, it *applies* transformations, and resolves to the wrepper.
-3. A **monad** has a way to *return* T unwrapped regardless of how many times transformations you applied to T.
-
+2. A **monad** has a way to _bind_ T, it _applies_ transformations, and resolves to the wrapper.
+3. A **monad** has a way to _return_ T unwrapped regardless of how many times transformations you applied to T.
 
 How about now? no, really... okay I really thought I nailed it there. Okay... one last time.
 
@@ -130,13 +136,11 @@ Monad: generic wrapper of T
 2. Binds, transforms, return wrapper.
 3. Unwraps T, returns T no matter how many wrappers.
 
-
 ...Still?
 
 ...Bro
 
 ...Fine, here is the code.
-
 
 ```csharp
 
@@ -148,7 +152,6 @@ public class Container<T>
     //...
 }
 ```
-
 
 ```csharp
 // A Monad has a way of lifting T into its context...
@@ -170,12 +173,13 @@ public class Container<T>(T data)
 }
 ```
 
-Earlier I mentioned that that for a class to be a true **monad** it needs a **static** way to lift T into its context. And while our wrapper is a damn fine wrapper, it doesn't have a way of directly satysfying that condition so far; since you would need to create a *new* instace of `Container`. As such:
+Earlier I mentioned that that for a class to be a true **monad** it needs a **static** way to lift T into its context. And while our wrapper is a damn fine wrapper, it doesn't have a way of directly satisfying that condition so far; since you would need to create a _new_ instance of `Container`. As such:
 
-```csharp 
+```csharp
 var myCoolWrapper = new Container<int>(9001);
 ```
-## Section I - Creating a Trully Static Container
+
+## Section I - Creating a Truly Static Container
 
 Lets create a static method:
 
@@ -184,9 +188,9 @@ public class Container<T>(T data)
 {
     private readonly T _data = data;
 
-    public static Container<TResult> Of<TResult>(TResult data) 
+    public static Container<TResult> Of<TResult>(TResult data)
         => new Container<TResult>.Of(data)
-    
+
 }
 ```
 
@@ -197,12 +201,12 @@ But when you call it you simply called `.Of(data)`
 
 `warning CS0693: Type parameter 'T' has the same name as the type parameter from outer type 'Container<T>'`
 
-It seems like a whole lot of work to write that whole function just to avoid a warning, but it does smoething else entirely huge for us. We are off the hook now and can make containers from a static context - yay us!
+It seems like a whole lot of work to write that whole function just to avoid a warning, but it does something else entirely huge for us. We are off the hook now and can make containers from a static context - yay us!
 
 ```csharp
 Console.WriteLine("Hello Monad Tutorial");
 
-// Getting instance from a static context. 
+// Getting instance from a static context.
 var myWrapper = Container<int>.Of(9001);
 
 Console.WriteLine(myWrapper.GetType());
@@ -231,19 +235,20 @@ Console.WriteLine("Hello Monad Tutorial");
 // sticky, requires new keyword and type signature defeating the whole purpose...
 var stickyContainer = new Container<int>(9001); //over 9000.
 
-// Our shiny container had no glue, compiler can infer the Type of T at runtime
-// Python folks: look at what they have to do to mimick a fraction of our power.jpeg
+// Our shiny container had no glue,
+// The C# compiler uses generic type argument inference to deduce T at compile-time, saving you from <int>.
+// Python folks: look at what they have to do to mimic a fraction of our power.jpeg
 var sealedContainer = Container.Of(9001);
 
 // pass other Types
-var djkhaled = Container.Of("my-love-and-affection");
+var djKhaled = Container.Of("my-love-and-affection");
 
-var anodaone = Container.Of(new {Stars = 5, Issues = 0});
+var anodaOne = Container.Of(new {Stars = 5, Issues = 0});
 
 // Full CLR type Container`1[<>f__AnonymousType0`2[System.Int32,System.Int32]]
-Console.WriteLine(anodaone.GetType());
+Console.WriteLine(anodaOne.GetType());
 
-// Static, but none-generic - sometimes reffered to as a Factory Design Pattern
+// Static, but none-generic - sometimes referred to as a Factory Design Pattern
 public static class Container
 {
     public static Container<T> Of<T>(T data) => new(data);
@@ -258,16 +263,17 @@ public class Container<T>(T data)
 ```
 
 We have touched lots of concepts here, some `OOP` some `functional programming`, some other design patterns `Factory` pattern.
-Some .NET centric ones like `Generics` and specific features `Primary constructors`. 
+Some .NET centric ones like `Generics` and specific features `Primary constructors`.
 
 I know its a lot and before we continue feel free to brush up on any of them. God knows I've had to many times, even while literally writing this. Check the [Further Reading Section](#further-reading) for those topics.
 
 But let's keep on trucking!
 
 The keen among you (me not included) might have noticed that I made this container so good, so air tight, that literally nothing can escape.. EVER...
-So not super duper useful eh... 
+So not super duper useful eh...
 
-Let's rewrite the *Generic Container* class, clean it and make it more useful via its property or a projection, we can do:
+Let's rewrite the _Generic Container_ class, clean it and make it more useful via its property or a projection, we can do:
+
 ```csharp
 public class Container<T>(T value)
 {
@@ -280,6 +286,7 @@ var giftBox = Container.Of(9001);
 ```
 
 This is pretty modern C# - So a more "traditional" implementation might reveal some of the magic more easily. These two pieces of code are functionally equivalent:
+
 ```csharp
 public class Container<T>
 {
@@ -293,10 +300,12 @@ public class Container<T>
     public T Value = _data;
 }
 ```
-## Section II - Mapping our way to freedom
-Okay but enough of that, so far our **monad** is not very useful, it barely has any value, it can take in a value and it eposes its value... we dont need to use the `new` keyword and it we levearage the inferance system to figure out the type at runtime.
 
-Let's start making something fun, the second the piece we need for our Monad is giving the abilty to perform trans formations on the wrapped entity. Let's add a `Map` function to our lackluster Container class.
+## Section II - Mapping our way to freedom
+
+Okay but enough of that, so far our **monad** is not very useful, it barely has any value, it can take in a value and it eposes its value... we don't need to use the `new` keyword and it we leverage the inference system to figure out the type of T at runtime.
+
+Let's start making something fun, the second the piece we need for our Monad is giving the ability to perform trans formations on the wrapped entity. Let's add a `Map` function to our lackluster Container class.
 
 ```csharp
 public class Container<T>(T value)
@@ -313,15 +322,17 @@ public class Container<T>(T value)
 There is quite a lot going on with this map function. You have actually seen this function, named the same in JavaScript on Array. Or `.Select()` in .NET and many other places.
 
 What our function does:
-- Enables us to apply *transformations* to our (incoming) T type, and produces a new Container of the transformed result. our second major key to our **monad**. Lets see why shortly.
+
+- Enables us to apply _transformations_ to our (incoming) T type, and produces a new Container of the transformed result. our second major key to our **monad**. Lets see why shortly.
 
 Anatomy of our `Map` function:
+
 - The method signature matches the return type `Container<TResult>`.
-- The `TResult` is used to avoid an overshadowing warning. 
+- The `TResult` is used to avoid an overshadowing warning.
 - The function takes a `T` as input and returns a `TResult`.
 - The class `T value` is passed to the function (as our T input).
 - The function resolves to a `TResult`.
-- The function is passed to the class consutrctor. 
+- The function is passed to the class constructor.
 - Finally a new container is returned.
 
 ```csharp
@@ -341,9 +352,10 @@ Console.WriteLine($"The result is: {giftWrapper}");
 
 ## Section III - Containers all the way down
 
-Our `wrapper` class is coming along great, we can transform our `T` and mutate it a bunch, we don't worry about its current state or context which is exactcly what our goal was.
+Our `wrapper` class is coming along great, we can transform our `T` and mutate it a bunch, we don't worry about its current state or context which is exactly what our goal was.
 
 But if you play around with with a long while you might do something like:
+
 ```csharp
 //...
 
@@ -354,23 +366,25 @@ var multiWrapped = Container
     .Map(x => Container.Of(x));
 
 
-Console.WriteLine($"mistery wrapper has: {multiWrapped}");
-// mistery wrapper has: Container`1[Container`1[Container`1[System.Int32]]]
+Console.WriteLine($"mystery wrapper has: {multiWrapped}");
+// mystery wrapper has: Container`1[Container`1[Container`1[System.Int32]]]
 ```
 
-Yes the code snippet is perfectly valid... in that it compiles, but now look at what we've made. *Containers all the way down*. We know have a container that has a container that has a container that has an `int`.
+Yes the code snippet is perfectly valid... in that it compiles, but now look at what we've made. _Containers all the way down_. We know have a container that has a container that has a container that has an `int`.
 
 And yes if you wanted to get the actual value of `T` you would do this:
+
 ```csharp
 //...
-Console.WriteLine($"mistery wrapper has: {multiWrapped.Value.Value.Value.Value}");
-// mistery wrapper has: 9001
-// Call Value once per .Map(...) invokation, + 1 more for the original container. Total of 4 times to unwrap our value, funny gift-giving prank... not very funny in code.
+Console.WriteLine($"mystery wrapper has: {multiWrapped.Value.Value.Value.Value}");
+// mystery wrapper has: 9001
+// Call Value once per .Map(...) invocation, + 1 more for the original container. Total of 4 times to unwrap our value, funny gift-giving prank... not very funny in code.
 ```
 
-This example is humorous, until you have a real-life production scenario you are trying to debug. If you've been around code long enough innevitably you will have ran into this scenario (yikes). things like `response.response` or `data.data` are for more common than you think. So whats the fix?
+This example is humorous, until you have a real-life production scenario you are trying to debug. If you've been around code long enough inevitably you will have ran into this scenario (yikes). things like `response.response` or `data.data` are for more common than you think. So whats the fix?
 
-*We implement a way to flat map the chain* with our aptly named `.FlatMap()` function.
+_We implement a way to flat map the chain_ with our aptly named `.FlatMap()` function.
+
 ```csharp
 //...
 public Container<TResult> FlatMap<TResult>(Func<T, Container<TResult>> transform)
@@ -381,9 +395,10 @@ public Container<TResult> FlatMap<TResult>(Func<T, Container<TResult>> transform
 
 On the surface `.Map(...)` and `.FlatMap(...)` look deceptively similar. But there are two key differences:
 
-1. Our `transform` function returns a *container* of type `TResult` instead of `TResult` directly hence `Func<T,Container<TResult>>>` and we do not return a new instance of wrapper (we do but bear with me) instead we *flatten* the chain, to allow us to undo a call to `Map(...)`
+1. Our `transform` function returns a _container_ of type `TResult` instead of `TResult` directly hence `Func<T,Container<TResult>>>` and we do not return a new instance of wrapper (we do but bear with me) instead we _flatten_ the chain, to allow us to undo a call to `Map(...)`
 
 So now we can do:
+
 ```csharp
 //...
 
@@ -396,10 +411,11 @@ var multiWrapped = Container
     .FlatMap()
     .FlatMap();
 
-Console.WriteLine($"mistery wrapper has: {multiWrapped.Value}");
-// mistery wrapper has: 9001
+Console.WriteLine($"mystery wrapper has: {multiWrapped.Value}");
+// mystery wrapper has: 9001
 ```
-So `FlatMap` is not magical, it cannot prevent an infinite binding chain, but it *can* prevent at least a double chain.
+
+So `FlatMap` is not magical, it cannot prevent an infinite binding chain, but it _can_ prevent at least a double chain.
 
 ```csharp
 var multiWrapped = Container
@@ -407,28 +423,30 @@ var multiWrapped = Container
     .Map(x => Container.Of(x));
     .FlatMap();
 
-Console.WriteLine($"mistery wrapper has: {multiWrapped.Value}");
-// mistery wrapper has: 9001
+Console.WriteLine($"mystery wrapper has: {multiWrapped.Value}");
+// mystery wrapper has: 9001
 ```
 
 # Summary - Putting all together
 
-Well that was quite a lot of writing. And in the age of `Claude` and `Copilot` - some might be turning their nose saying "why bother?" "what the point?". And to those people I say, this is *exactly* the point. Its more important than ever for engineers to dig deeper, really understand the more advanced concepts. As we move more towards being *agentic managers* where we are spending more time reading and reviewing AI generated code than writing it. Sharpening your skills becomes more and more important. 
+Well that was quite a lot of writing. And in the age of `Claude` and `Copilot` - some might be turning their nose saying "why bother?" "what the point?". And to those people I say, this is _exactly_ the point. Its more important than ever for engineers to dig deeper, really understand the more advanced concepts. As we move more towards being _agentic managers_ where we are spending more time reading and reviewing AI generated code than writing it. Sharpening your skills becomes more and more important.
 
-Regardless of how fast your manager vibe-coded that POC he swears is ***almost production ready***. Software engineering still not a solved issue, you still need to know how to code, and how to design systems. 
+Regardless of how fast your manager vibe-coded that POC he swears is **_almost production ready_**. Software engineering still not a solved issue, you still need to know how to code, and how to design systems.
 
-And in my best Youtuber impression, *If you liked this tutorial, leave a comment, feedback or start this repo* I get absolutely nothing other than knowing maybe someone out there **learnted** something. :D
+And in my best Youtuber impression, _If you liked this tutorial, leave a comment, feedback or start this repo_ I get absolutely nothing other than knowing maybe someone out there **learnted** something. :D
 
 ## Full Working Example Program W/ Extra Goodies
 
 Fundamentally it is all the same code - Here is what changed and got added:
+
 - Adds `.ToString` so we can pass it without calling var.Value.
 - Adds .`GetInfo` so we get some nicely formatted output.
 - Uses `=>` syntax to remove visual clutter
-- Renames `TResult` to `U` to remove visual clutter. 
+- Renames `TResult` to `U` to remove visual clutter.
 - Renames `Map` to `Select` to enable LINQ syntax.
-- Renames `FlatMap` to `SelectMany` to enable LING syntax.
-- Adds `FlatMap/SelectMany` override to desmonstrate LINQ multi-selct.
+- Renames `FlatMap` to `SelectMany` to enable LINQ syntax.
+- Adds `FlatMap/SelectMany` override to demonstrates LINQ multi-select.
+
 ```csharp
 using System;
 
@@ -457,8 +475,8 @@ public class Container<T>(T value)
     {
         // Unwraps T, runs selector to get Container<U>, unwraps U, projects to V
         return SelectMany(x => selector(x).Select(y => resultSelector(x, y)));
-    }    
-    
+    }
+
     public override string ToString() => $"Value of container is: {value}";
 
     // Reflection method to inspect container state
@@ -483,7 +501,7 @@ public static class Program
         Console.WriteLine(wrapper.GetInfo()); // Calls GetInfo()
 
         Console.WriteLine("\n--- Method Chaining (Select & SelectMany) ---");
-        
+
         // Transform the payload (Map / Select)
         var textWrapper = wrapper.Select(x => $"Power level over {x}!");
         Console.WriteLine(textWrapper);
@@ -498,7 +516,7 @@ public static class Program
         var c2 = Container.Of(500);
 
         // Works thanks to the two-parameter SelectMany<U, V> overload
-        var combined = 
+        var combined =
             from x in c1
             from y in c2
             select x + y;
@@ -509,10 +527,22 @@ public static class Program
 }
 ```
 
+# Closing thoughts
+
+- If you somehow made it here and you thought to yourself... "Cool Container, but why do I care in a real app?" the answer is: welp... this is how all them fancy APIs you've encounter likely work or implement
+
+the exact same pattern is what powers:
+
+- Nullable<T> / Option<T> (railway-oriented error handling)
+- Task<T> (async sequencing)
+- IEnumerable<T> (collection traversal).
 
 # Further Reading
+
 - [Generics in C#](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/)
 - [Primary Constructors in C#](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-12#primary-constructors)
 - [Projection Methods (LINQ / Select) in C#](https://learn.microsoft.com/en-us/dotnet/csharp/linq/standard-query-operators/projection-operations)
 - [Reflection in .NET](https://learn.microsoft.com/en-us/dotnet/framework/reflection-and-codedom/reflection)
 - [Factory Design Pattern Concepts in C#](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/infrastructure-persistence-layer-implemenation#use-factories-for-aggregate-creation)
+
+Happy coding :)
