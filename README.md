@@ -3,5 +3,5 @@
 - Specially in the agentic area of coding, staying in coding condition so when the LLM spits code at you, you can... *see sharp*... donthurtme.
 - I hope to add more topics here.
 
-  ## Table of content
+  ## Table of Content
   - [How to Monads C#](./Monads/README.md)

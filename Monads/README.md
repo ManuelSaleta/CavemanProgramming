@@ -1,12 +1,12 @@
 # Monads
 
-## Who is this for?
+## Who Is This For?
 
 It's for you dummy; no, not you, _me_. This is for me, but can also be for you. But mainly... this is for me. Because I have seen every video on Monads, endless tutorials and somehow it never clicked. If you asked me to implement it forget it. Maybe the trick is to start coding by age 5 and sell your first startup by 11. And I am about 20 years too late for that.
 
 By the end of this tutorial you will _understand_ monads, and even you,again... not you silly, me. Potentially know how to implement one...
 
-If you are human, skip to the [What Is A Monad For Humans](#what-is-a-monad-for-humans) section.
+If you are human, skip to the [What Is a Monad for Humans](#what-is-a-monad-for-humans) section.
 
 Disclaimer - I will use C# for this tutorial, because well.. thats what I want to use `:D`
 
@@ -104,7 +104,7 @@ Congratulations, you know all you need about **monads**. Go on, get out of here 
 
 Le me try explaining it myself as eloquently as the above segment.
 
-# What is a Monad For Humans
+# What Is a Monad for Humans
 
 Put simply, a **monad** is a type of container that can take something in have it applied changes to while retaining the same shape, it doesn't care about the state of the thing it contains. This is a design pattern widely used in functional programming. Okay but _what_ is a monad bro I am getting tired...
 
@@ -301,7 +301,7 @@ public class Container<T>
 }
 ```
 
-## Section II - Mapping our way to freedom
+## Section II - Mapping Our Way to Freedom
 
 Okay but enough of that, so far our **monad** is not very useful, it barely has any value, it can take in a value and it eposes its value... we don't need to use the `new` keyword and it we leverage the inference system to figure out the type of T at runtime.
 
@@ -350,7 +350,7 @@ Console.WriteLine($"The result is: {giftWrapper}");
 // The result is: 19
 ```
 
-## Section III - Containers all the way down
+## Section III - Containers All the Way Down
 
 Our `wrapper` class is coming along great, we can transform our `T` and mutate it a bunch, we don't worry about its current state or context which is exactly what our goal was.
 
@@ -427,7 +427,7 @@ Console.WriteLine($"mystery wrapper has: {multiWrapped.Value}");
 // mystery wrapper has: 9001
 ```
 
-# Summary - Putting all together
+# Summary - Putting All Together
 
 Well that was quite a lot of writing. And in the age of `Claude` and `Copilot` - some might be turning their nose saying "why bother?" "what the point?". And to those people I say, this is _exactly_ the point. Its more important than ever for engineers to dig deeper, really understand the more advanced concepts. As we move more towards being _agentic managers_ where we are spending more time reading and reviewing AI generated code than writing it. Sharpening your skills becomes more and more important.
 
@@ -527,7 +527,7 @@ public static class Program
 }
 ```
 
-# Closing thoughts
+# Closing Thoughts
 
 - If you somehow made it here and you thought to yourself... "Cool Container, but why do I care in a real app?" the answer is: welp... this is how all them fancy APIs you've encounter likely work or implement
 
