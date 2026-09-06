@@ -2,20 +2,20 @@
 
 ## Who Is This For?
 
-Don't feel like reading? skip straight to [What Is a Monad for Humans](#what-is-a-monad-for-humans) section.
+Don't feel like reading? Skip straight to [What Is a Monad for Humans](#what-is-a-monad-for-humans) section.
 
 ---
 
 It's for you dummy; no, not you, _me_. This is for me, but can also be for you. But mainly... this is for me. Because I have seen every video on Monads, endless tutorials and somehow it never clicked. If you asked me to implement it forget it. Maybe the trick is to start coding by age 5 and sell your first startup by 11. And I am about 20 years too late for that.
 
-By the end of this tutorial you will _understand_ monads, and even you,again... not you silly, me. Potentially know how to implement one...
+By the end of this tutorial you will _understand_ monads, and even you, again... not you silly, me. Potentially know how to implement one...
 
-Disclaimer - I will use C# for this tutorial, because well.. thats what I want to use `:D`
+Disclaimer - I will use C# for this tutorial, because well.. that's what I want to use `:D`
 
 # What Will I Learn?
 
 - You will learn about **monads**.
-- You will how to implement it in C#. Step-by-step.
+- You will learn how to implement it in C#. Step-by-step.
 - Additionally learn other C# topics, like `Generics`.
 
 Enough mumbling...
@@ -104,12 +104,12 @@ var right = m.FlatMap(x => f(x).FlatMap(g));
 
 Congratulations, you know all you need about **monads**. Go on, get out of here - there are AI startups to make and sell. But if you would like to stick around and hangout with me that'd be nice too.
 
-Le me try explaining it myself as eloquently as the above segment.
+Let me try explaining it myself as eloquently as the above segment.
 
 # What Is a Monad for Humans
 
 Put simply, a **monad** is a type of container that can take something in have it applied changes to while retaining the same _shape_, it doesn't care about the state of the thing it contains.
-Why would you care? its a design pattern you've been using all along. `Array` on JS is a Monad. In .NET you've got `IEnumerable<T>` and `Nullable<T>` (and many others.)
+Why would you care? it's a design pattern you've been using all along. `Array` on JS is a Monad. In .NET you've got `IEnumerable<T>` and `Nullable<T>` (and many others.)
 This is a design pattern widely used in functional programming. Okay but _what_ is a monad bro I am getting tired...
 
 - Sorry just stalling. Here it is:
@@ -119,7 +119,7 @@ _"A **monad** is a type of container"_ Like a box, a wrapper etc... The importan
 _Monads always have at least three key aspects to them:_
 
 1. A **monad** has a way of putting an entity into its wrapper
-2. A **monad** has a way of applying transformations to the wrapped entity, while't being able to return the updated entity in the same wrapper type.
+2. A **monad** has a way of applying transformations to the wrapped entity, whilst being able to return the updated entity in the same wrapper type.
 3. A **monad** has a Unit call that (returns) and Bind call that (flatMaps) on its generic T.
 
 Are you an expert now? no? okay let us try once more with a bit more formal context.
@@ -163,7 +163,7 @@ public class Container<T>
 {
     private readonly T _data;
 
-    public class Container<T>(T data)
+    public Container(T data)
     {
         _data = data;
     }
@@ -176,7 +176,7 @@ public class Container<T>(T data)
 }
 ```
 
-Earlier I mentioned that that for a class to be a true **monad** it needs a **static** way to lift T into its context. And while our wrapper is a damn fine wrapper, it doesn't have a way of directly satisfying that condition so far; since you would need to create a _new_ instance of `Container`. As such:
+The **monad** as a definition does not needs a **static** way to lift T into its context, but it would be really nice for us if it did right? And while our wrapper is a damn fine wrapper, it doesn't have a way of directly satisfying that condition so far; since you would need to create a _new_ instance of `Container`. As such:
 
 ```csharp
 var myCoolWrapper = new Container<int>(9001);
@@ -197,7 +197,7 @@ public class Container<T>(T data)
 }
 
 //...
-var sillyContainer = Container<int>Of(9001);
+var sillyContainer = Container<int>.Of(9001);
 ```
 
 But wait, what is TResult? and why do you declare function `Of` as `Of<TResult>(...)`
@@ -254,7 +254,7 @@ var anodaOne = Container.Of(new {Stars = 5, Issues = 0});
 // Full CLR type Container`1[<>f__AnonymousType0`2[System.Int32,System.Int32]]
 Console.WriteLine(anodaOne.GetType());
 
-// Static, but none-generic - sometimes referred to as a Factory Design Pattern
+// Static, but non-generic - sometimes referred to as a Factory Design Pattern
 public static class Container
 {
     public static Container<T> Of<T>(T data) => new(data);
@@ -271,7 +271,7 @@ public class Container<T>(T data)
 We have touched lots of concepts here, some `OOP` some `functional programming`, some other design patterns `Factory` pattern.
 Some .NET centric ones like `Generics` and specific features `Primary constructors`.
 
-I know its a lot and before we continue feel free to brush up on any of them. God knows I've had to many times, even while literally writing this. Check the [Further Reading Section](#further-reading) for those topics.
+I know it's a lot and before we continue feel free to brush up on any of them. God knows I've had to, many times, even while literally writing this. Check the [Further Reading Section](#further-reading) for those topics.
 
 But let's keep on trucking!
 
@@ -303,15 +303,15 @@ public class Container<T>
         _data = data;
     }
 
-    public T Value = _data;
+    public T Value => _data;
 }
 ```
 
 ## Section II - Mapping Our Way to Freedom
 
-Okay but enough of that, so far our **monad** is not very useful, it barely has any value, it can take in a value and it eposes its value... we don't need to use the `new` keyword and it we leverage the inference system to figure out the type of T at runtime.
+Okay but enough of that, so far our **monad** is not very useful, it barely has any value, it can take in a value and it exposes its value... we don't need to use the `new` keyword and we leverage the inference system to figure out the type of T at compile-time.
 
-Let's start making something fun, the second the piece we need for our Monad is giving the ability to perform trans formations on the wrapped entity. Let's add a `Map` function to our lackluster Container class.
+Let's start making something fun, the second piece we need for our Monad is giving the ability to perform transformations on the wrapped entity. Let's add a `Map` function to our lackluster Container class.
 
 ```csharp
 public class Container<T>(T value)
@@ -329,7 +329,7 @@ There is quite a lot going on with this map function. You have actually seen thi
 
 What our function does:
 
-- Enables us to apply _transformations_ to our (incoming) T type, and produces a new Container of the transformed result. our second major key to our **monad**. Lets see why shortly.
+- Enables us to apply _transformations_ to our (incoming) T type, and produces a new Container of the transformed result. Our second major key to our **monad**. Let's see why shortly.
 
 Anatomy of our `Map` function:
 
@@ -345,13 +345,13 @@ Anatomy of our `Map` function:
 // Now we can do things like:
 var giftWrapper = Container
     .Of(9001)                           //We start with int 9001
-    .Map(x => x * 2.0)                  //Transform to float 18002.00
+    .Map(x => x * 2.0)                  //Transform to double 18002.00
     .Map(x => Convert.ToInt32(x + 1))   //Cast back to int, add +1
     .Map(x => $"The value is: {x}")     //Transform to string.
     .Map(x => x.Length);                //Can you get what the result is?
 
 Console.WriteLine($"The type is: {giftWrapper.GetType()}");
-Console.WriteLine($"The result is: {giftWrapper}");
+Console.WriteLine($"The result is: {giftWrapper.Value}");
 // The type is: Container`1[System.Int32]
 // The result is: 19
 ```
@@ -360,7 +360,7 @@ Console.WriteLine($"The result is: {giftWrapper}");
 
 Our `wrapper` class is coming along great, we can transform our `T` and mutate it a bunch, we don't worry about its current state or context which is exactly what our goal was.
 
-But if you play around with with a long while you might do something like:
+But if you play around with it for a while you might do something like:
 
 ```csharp
 //...
@@ -373,10 +373,10 @@ var multiWrapped = Container
 
 
 Console.WriteLine($"mystery wrapper has: {multiWrapped}");
-// mystery wrapper has: Container`1[Container`1[Container`1[System.Int32]]]
+// mystery wrapper has: Container`1[Container`1[Container`1[Container`1[System.Int32]]]]
 ```
 
-Yes the code snippet is perfectly valid... in that it compiles, but now look at what we've made. _Containers all the way down_. We know have a container that has a container that has a container that has an `int`.
+Yes the code snippet is perfectly valid... in that it compiles, but now look at what we've made. _Containers all the way down_. We now have a container that has a container that has a container that has a container with an `int`.
 
 And yes if you wanted to get the actual value of `T` you would do this:
 
@@ -387,7 +387,7 @@ Console.WriteLine($"mystery wrapper has: {multiWrapped.Value.Value.Value.Value}"
 // Call Value once per .Map(...) invocation, + 1 more for the original container. Total of 4 times to unwrap our value, funny gift-giving prank... not very funny in code.
 ```
 
-This example is humorous, until you have a real-life production scenario you are trying to debug. If you've been around code long enough inevitably you will have ran into this scenario (yikes). things like `response.response` or `data.data` are for more common than you think. So whats the fix?
+This example is humorous, until you have a real-life production scenario you are trying to debug. If you've been around code long enough inevitably you will have run into this scenario (yikes). Things like `response.response` or `data.data` are far more common than you think. So what's the fix?
 
 _We implement a way to flat map the chain_ with our aptly named `.FlatMap()` function.
 
@@ -401,7 +401,7 @@ public Container<TResult> FlatMap<TResult>(Func<T, Container<TResult>> transform
 
 On the surface `.Map(...)` and `.FlatMap(...)` look deceptively similar. But there are two key differences:
 
-1. Our `transform` function returns a _container_ of type `TResult` instead of `TResult` directly hence `Func<T,Container<TResult>>>` and we do not return a new instance of wrapper (we do but bear with me) instead we _flatten_ the chain, to allow us to undo a call to `Map(...)`
+1. Our `transform` function returns a _container_ of type `TResult` instead of `TResult` directly hence `Func<T, Container<TResult>>` and we do not return a new instance of wrapper (we do but bear with me) instead we _flatten_ the chain, to allow us to undo a call to `Map(...)`
 
 So now we can do:
 
@@ -426,8 +426,8 @@ So `FlatMap` is not magical, it cannot prevent an infinite binding chain, but it
 ```csharp
 var multiWrapped = Container
     .Of(9001)
-    .Map(x => Container.Of(x));
-    .FlatMap( x => x);
+    .Map(x => Container.Of(x))
+    .FlatMap(x => x);
 
 Console.WriteLine($"mystery wrapper has: {multiWrapped.Value}");
 // mystery wrapper has: 9001
@@ -435,11 +435,11 @@ Console.WriteLine($"mystery wrapper has: {multiWrapped.Value}");
 
 # Summary - Putting All Together
 
-Well that was quite a lot of writing. And in the age of `Claude` and `Copilot` - some might be turning their nose saying "why bother?" "what the point?". And to those people I say, this is _exactly_ the point. Its more important than ever for engineers to dig deeper, really understand the more advanced concepts. As we move more towards being _agentic managers_ where we are spending more time reading and reviewing AI generated code than writing it. Sharpening your skills becomes more and more important.
+Well that was quite a lot of writing. And in the age of `Claude` and `Copilot` - some might be turning their nose saying "why bother?" "what's the point?". And to those people I say, this is _exactly_ the point. It's more important than ever for engineers to dig deeper, really understand the more advanced concepts. As we move more towards being _agentic managers_ where we are spending more time reading and reviewing AI generated code than writing it. Sharpening your skills becomes more and more important.
 
-Regardless of how fast your manager vibe-coded that POC he swears is **_almost production ready_**. Software engineering still not a solved issue, you still need to know how to code, and how to design systems.
+Regardless of how fast your manager vibe-coded that POC he swears is **_almost production ready_**. Software engineering is still not a solved issue, you still need to know how to code, and how to design systems.
 
-And in my best Youtuber impression, _If you liked this tutorial, leave a comment, feedback or start this repo_ I get absolutely nothing other than knowing maybe someone out there **learnted** something. :D
+And in my best Youtuber impression, _If you liked this tutorial, leave a comment, feedback or star this repo_ I get absolutely nothing other than knowing maybe someone out there **learnted** something. :D
 
 ## Full Working Example Program W/ Extra Goodies
 
@@ -451,7 +451,7 @@ Fundamentally it is all the same code - Here is what changed and got added:
 - Renames `TResult` to `U` to remove visual clutter.
 - Renames `Map` to `Select` to enable LINQ syntax.
 - Renames `FlatMap` to `SelectMany` to enable LINQ syntax.
-- Adds `FlatMap/SelectMany` override to demonstrates LINQ multi-select.
+- Adds `FlatMap/SelectMany` overload to demonstrate LINQ multi-select.
 
 ```csharp
 using System;
@@ -535,7 +535,7 @@ public static class Program
 
 # Closing Thoughts
 
-- If you somehow made it here and you thought to yourself... "Cool Container, but why do I care in a real app?" the answer is: welp... this is how all them fancy APIs you've encounter likely work or implement
+- If you somehow made it here and you thought to yourself... "Cool Container, but why do I care in a real app?" the answer is: welp... this is how all them fancy APIs you've encountered likely work or implement
 
 the exact same pattern is what powers:
 
