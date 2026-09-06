@@ -2,11 +2,13 @@
 
 ## Who Is This For?
 
+Don't feel like reading? skip straight to [What Is a Monad for Humans](#what-is-a-monad-for-humans) section.
+
+---
+
 It's for you dummy; no, not you, _me_. This is for me, but can also be for you. But mainly... this is for me. Because I have seen every video on Monads, endless tutorials and somehow it never clicked. If you asked me to implement it forget it. Maybe the trick is to start coding by age 5 and sell your first startup by 11. And I am about 20 years too late for that.
 
 By the end of this tutorial you will _understand_ monads, and even you,again... not you silly, me. Potentially know how to implement one...
-
-If you are human, skip to the [What Is a Monad for Humans](#what-is-a-monad-for-humans) section.
 
 Disclaimer - I will use C# for this tutorial, because well.. thats what I want to use `:D`
 
@@ -22,7 +24,7 @@ Enough mumbling...
 
 ## Monads: Mathematical & Functional Definitions
 
-Quick reference definitions for Monads from Category Theory and Functional Programming.
+Quick reference definitions for Monads from Category Theory and Functional Programming. (For the ultra nerdy)
 
 ---
 
@@ -98,7 +100,7 @@ var right = m.FlatMap(x => f(x).FlatMap(g));
 // Associativity Law: left.Value == right.Value ("Value: 15")
 ```
 
-## Lesson Over
+# Lesson Over
 
 Congratulations, you know all you need about **monads**. Go on, get out of here - there are AI startups to make and sell. But if you would like to stick around and hangout with me that'd be nice too.
 
@@ -106,35 +108,36 @@ Le me try explaining it myself as eloquently as the above segment.
 
 # What Is a Monad for Humans
 
-Put simply, a **monad** is a type of container that can take something in have it applied changes to while retaining the same shape, it doesn't care about the state of the thing it contains. This is a design pattern widely used in functional programming. Okay but _what_ is a monad bro I am getting tired...
+Put simply, a **monad** is a type of container that can take something in have it applied changes to while retaining the same _shape_, it doesn't care about the state of the thing it contains.
+Why would you care? its a design pattern you've been using all along. `Array` on JS is a Monad. In .NET you've got `IEnumerable<T>` and `Nullable<T>` (and many others.)
+This is a design pattern widely used in functional programming. Okay but _what_ is a monad bro I am getting tired...
 
-- Sorry just stalling. Here it is
+- Sorry just stalling. Here it is:
 
 _"A **monad** is a type of container"_ Like a box, a wrapper etc... The important thing to remember is
 
 _Monads always have at least three key aspects to them:_
 
 1. A **monad** has a way of putting an entity into its wrapper
-2. A **monad** has a way of applying any number of transformations to the wrapped entity, while't being able to return the updated entity in the wrapper.
-3. A **monad** has a Unit call that (returns) and Bind call that (flatMaps) its generic T.
+2. A **monad** has a way of applying transformations to the wrapped entity, while't being able to return the updated entity in the same wrapper type.
+3. A **monad** has a Unit call that (returns) and Bind call that (flatMaps) on its generic T.
 
 Are you an expert now? no? okay let us try once more with a bit more formal context.
 
 _"A **monad** is a generic wrapper that can lift any T into its context, it has a way of binding and applying transformations to T while avoiding side effects."_
 
-Monads at least have three parts to them:
+Monads have to have at least these parts to them:
 
 1. A **monad** has a static mechanism to lift T value into its context and resolves to the wrapper.
 2. A **monad** has a way to _bind_ T, it _applies_ transformations, and resolves to the wrapper.
-3. A **monad** has a way to _return_ T unwrapped regardless of how many times transformations you applied to T.
 
 How about now? no, really... okay I really thought I nailed it there. Okay... one last time.
 
-Monad: generic wrapper of T
+Our Monad example will be: generic wrapper of T
 
 1. Static context, lift T, return wrapper.
-2. Binds, transforms, return wrapper.
-3. Unwraps T, returns T no matter how many wrappers.
+2. Binds, transforms, returns wrapper.
+3. Unwraps T, returns T even when passed Wrapper<T>. (Many famous monads deliberately avoid extending this ability to keep things wrapped)
 
 ...Still?
 
@@ -189,9 +192,12 @@ public class Container<T>(T data)
     private readonly T _data = data;
 
     public static Container<TResult> Of<TResult>(TResult data)
-        => new Container<TResult>.Of(data)
+        => new Container<TResult>(data);
 
 }
+
+//...
+var sillyContainer = Container<int>Of(9001);
 ```
 
 But wait, what is TResult? and why do you declare function `Of` as `Of<TResult>(...)`
@@ -407,9 +413,9 @@ var multiWrapped = Container
     .Map(x => Container.Of(x))
     .Map(x => Container.Of(x))
     .Map(x => Container.Of(x))
-    .FlatMap()
-    .FlatMap()
-    .FlatMap();
+    .FlatMap(x => x) //Calling FlatMap() w/o lambda raises CS7036
+    .FlatMap(x => x)
+    .FlatMap(x => x);
 
 Console.WriteLine($"mystery wrapper has: {multiWrapped.Value}");
 // mystery wrapper has: 9001
@@ -421,7 +427,7 @@ So `FlatMap` is not magical, it cannot prevent an infinite binding chain, but it
 var multiWrapped = Container
     .Of(9001)
     .Map(x => Container.Of(x));
-    .FlatMap();
+    .FlatMap( x => x);
 
 Console.WriteLine($"mystery wrapper has: {multiWrapped.Value}");
 // mystery wrapper has: 9001
