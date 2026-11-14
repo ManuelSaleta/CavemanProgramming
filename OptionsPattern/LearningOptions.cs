@@ -17,6 +17,9 @@ var initialConfig = new Dictionary<string, string?>
 {
     ["Database:ConnectionString"] = "Server=sql.caveman.local;Database=RocksDb;User=thog;Password=secret",
     ["Database:TimeoutSeconds"] = "30",
+    ["SomeConfig:ApiKey"] = "caveman_live_api_key_12345",
+    ["SomeConfig:Endpoint"] = "https://api.caveman.local/v1",
+    ["SomeConfig:TimeoutSeconds"] = "15",
     ["Features:BetaTheme"] = "Disabled",
     ["PaymentGateways:Stripe:ApiKey"] = "sk_stripe_thog_123",
     ["PaymentGateways:Stripe:TimeoutSeconds"] = "5",
@@ -33,6 +36,16 @@ var configuration = configBuilder.Build();
 // 2. Service Registration & Options Setup
 // -------------------------------------------------------------------------------------------------
 var services = new ServiceCollection();
+
+// Register IConfiguration into DI (enables .BindConfiguration(...))
+services.AddSingleton<IConfiguration>(configuration);
+
+// --- Modern Approach: AddOptions + BindConfiguration + ValidateDataAnnotations + ValidateOnStart ---
+services.AddOptions<SomeConfigOpts>()
+    .BindConfiguration(SomeConfigOpts.SectionName)
+    .ValidateDataAnnotations()
+    .Validate(opts => !string.IsNullOrWhiteSpace(opts.ApiKey), "ApiKey cannot be empty.")
+    .ValidateOnStart(); // Fail-fast at startup!
 
 // Register DatabaseOptions bound to the "Database" section
 services.Configure<DatabaseOptions>(configuration.GetSection("Database"));
@@ -53,20 +66,22 @@ services.PostConfigure<DatabaseOptions>(opts =>
     }
 });
 
+// Register a consuming consumer service demonstrating injection
+services.AddTransient<OrderProcessingService>();
+
 var provider = services.BuildServiceProvider();
 
 // -------------------------------------------------------------------------------------------------
-// Demo 1: Basic IOptions<T> (Singleton)
+// Demo 1: Working with IOptions<SomeConfigOpts> (Modern Approach Contrast)
 // -------------------------------------------------------------------------------------------------
-Console.WriteLine("--- Demo 1: Basic IOptions<T> (Strongly Typed POCO) ---");
-var dbOptions = provider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-Console.WriteLine($"Connection String: {dbOptions.ConnectionString}");
-Console.WriteLine($"Timeout:           {dbOptions.TimeoutSeconds}s\n");
+Console.WriteLine("--- Demo 1: Working with IOptions<SomeConfigOpts> (Modern .ValidateOnStart) ---");
+var orderService = provider.GetRequiredService<OrderProcessingService>();
+orderService.ProcessOrder();
 
 // -------------------------------------------------------------------------------------------------
 // Demo 2: The Lifetime Duel (IOptions vs IOptionsSnapshot vs IOptionsMonitor)
 // -------------------------------------------------------------------------------------------------
-Console.WriteLine("--- Demo 2: The Lifetime Duel (Reloading Config) ---");
+Console.WriteLine("\n--- Demo 2: The Lifetime Duel (Reloading Config) ---");
 
 var options = provider.GetRequiredService<IOptions<FeatureFlagsOptions>>();
 var monitor = provider.GetRequiredService<IOptionsMonitor<FeatureFlagsOptions>>();
@@ -160,8 +175,35 @@ Console.WriteLine(" All Options Pattern Demos Completed Cleanly!     ");
 Console.WriteLine("==================================================");
 
 // -------------------------------------------------------------------------------------------------
-// Option Models (POCOs)
+// Option Models (POCOs) & Services
 // -------------------------------------------------------------------------------------------------
+public class SomeConfigOpts
+{
+    public const string SectionName = "SomeConfig";
+
+    [Required(ErrorMessage = "SomeConfig:ApiKey is required.")]
+    public string ApiKey { get; set; } = string.Empty;
+
+    [Url(ErrorMessage = "SomeConfig:Endpoint must be a valid URL.")]
+    public string Endpoint { get; set; } = string.Empty;
+
+    [Range(1, 60, ErrorMessage = "SomeConfig:TimeoutSeconds must be between 1 and 60.")]
+    public int TimeoutSeconds { get; set; } = 30;
+}
+
+public class OrderProcessingService(IOptions<SomeConfigOpts> options)
+{
+    private readonly SomeConfigOpts _config = options.Value;
+
+    public void ProcessOrder()
+    {
+        Console.WriteLine($"[OrderProcessingService] Injected IOptions<SomeConfigOpts>:");
+        Console.WriteLine($"  Endpoint:       {_config.Endpoint}");
+        Console.WriteLine($"  ApiKey:         {_config.ApiKey}");
+        Console.WriteLine($"  TimeoutSeconds: {_config.TimeoutSeconds}s");
+    }
+}
+
 public class DatabaseOptions
 {
     [Required(ErrorMessage = "Database:ConnectionString is required and cannot be empty.")]
