@@ -215,6 +215,45 @@ Here is where 90% of developers stumble. .NET gives you **three** interfaces for
 
 Beyond basic Data Annotations, real-world options often require business logic validation or cross-property dependencies.
 
+### ⚠️ Trap Alert: The `required` Keyword vs. `[Required]` / `[Range]` Decorators
+
+A natural question in modern C# is:
+*"Can we replace `[Required]` and `[Range]` attributes with C# 11's `required` modifier on the POCO?"*
+
+```csharp
+// Can we just replace the attributes with the required keyword?
+public class DatabaseOptions
+{
+    public required string ConnectionString { get; set; }
+    public required int TimeoutSeconds { get; set; }
+}
+```
+
+The short answer: **No, they operate at completely different boundaries.**
+
+1. **Compile-Time vs. Runtime Binding**:
+   - The C# `required` keyword is a **compile-time compiler check** enforced when code manually initializes an object using an object initializer (`new DatabaseOptions { ... }`).
+   - The .NET Configuration Binder instantiates options dynamically at runtime using reflection (`Activator.CreateInstance`). Reflection completely bypasses the compiler's `required` check!
+   - `.ValidateDataAnnotations()` only evaluates `ValidationAttribute` subclasses (like `[RequiredAttribute]`). If `ConnectionString` is omitted from `appsettings.json`, with the `required` keyword alone, `ConnectionString` remains `null` at runtime—and `.ValidateOnStart()` will not catch it!
+2. **Value & Range Validation**:
+   - The `required` modifier only guarantees that a property was assigned during construction—it has no concept of validation rules (e.g., verifying `1 <= TimeoutSeconds <= 300`, regex matching, or URL validation).
+   - For value types like `int`, the default value (`0`) satisfies initialization, but directly violates business constraints.
+
+#### The Pro-Move: Combine Both!
+```csharp
+public class DatabaseOptions
+{
+    // 'required' enforces compile-time initialization in your C# unit tests
+    // '[Required]' enforces runtime validation by the .NET configuration binder & ValidateOnStart
+    [Required(ErrorMessage = "ConnectionString cannot be empty.")]
+    public required string ConnectionString { get; set; }
+
+    // Range cannot be expressed with the required keyword
+    [Range(1, 300, ErrorMessage = "TimeoutSeconds must be between 1 and 300.")]
+    public int TimeoutSeconds { get; set; } = 30;
+}
+```
+
 ### Fluent Custom Validation
 
 ```csharp
